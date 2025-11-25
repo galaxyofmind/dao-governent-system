@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAO Governance - Website Reputation System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <circle cx="20" cy="20" r="18" stroke="url(#gradient)" stroke-width="2" />
+                        <path d="M20 10L25 15L20 20L15 15L20 10Z" fill="url(#gradient)" />
+                        <path d="M20 20L25 25L20 30L15 25L20 20Z" fill="url(#gradient)" opacity="0.6" />
+                        <defs>
+                            <linearGradient id="gradient" x1="0" y1="0" x2="40" y2="40">
+                                <stop offset="0%" stop-color="#667eea" />
+                                <stop offset="100%" stop-color="#764ba2" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <h1>DAO Governance</h1>
+                </div>
+                <div class="wallet-info">
+                    <button id="connectWallet" class="btn btn-primary">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path
+                                d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+                        </svg>
+                        Connect Wallet
+                    </button>
+                    <div id="walletConnected" class="wallet-connected" style="display: none;">
+                        <div class="wallet-address" id="walletAddress"></div>
+                        <div class="token-balance">
+                            <span id="tokenBalance">0</span> Tokens
+                        </div>
+                        <button onclick="switchWallet()" class="btn-switch-wallet" title="Switch Wallet">
+                            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                                <path
+                                    d="M8 5a1 1 0 100 2h5.586l-1.293 1.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L13.586 5H8zM12 15a1 1 0 100-2H6.414l1.293-1.293a1 1 0 10-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L6.414 15H12z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Total Proposals</div>
+                        <div class="stat-value" id="totalProposals">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">DAO Members</div>
+                        <div class="stat-value" id="totalMembers">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Your Tokens</div>
+                        <div class="stat-value" id="userTokens">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Tabs -->
+            <div class="tabs">
+                <button class="tab active" data-tab="submit">Submit Website</button>
+                <button class="tab" data-tab="proposals">All Proposals</button>
+                <button class="tab" data-tab="members">Members</button>
+                <button class="tab" data-tab="join">Join DAO</button>
+            </div>
+
+            <!-- Tab Contents -->
+            <div class="tab-content">
+                <!-- Submit Website Tab -->
+                <div id="submit-tab" class="tab-pane active">
+                    <div class="card">
+                        <h2>Submit Website for Evaluation</h2>
+                        <p class="card-description">Submit a website URL to be evaluated by DAO members for potential
+                            fraud or security risks.</p>
+                        <form id="submitForm" class="form">
+                            <div class="form-group">
+                                <label for="websiteUrl">Website URL</label>
+                                <input type="url" id="websiteUrl" placeholder="https://example.com" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-large">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path
+                                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
+                                </svg>
+                                Submit Proposal
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Proposals Tab -->
+                <div id="proposals-tab" class="tab-pane">
+                    <div class="card">
+                        <div class="card-header-with-search">
+                            <div>
+                                <h2>All Proposals</h2>
+                                <p class="card-description">Vote on submitted websites to help classify their
+                                    reputation.</p>
+                            </div>
+                            <div class="search-box">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <input type="text" id="searchProposals" placeholder="Search by website URL...">
+                            </div>
+                        </div>
+                        <div id="proposalsList" class="proposals-list">
+                            <!-- Proposals will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Members Tab -->
+                <div id="members-tab" class="tab-pane">
+                    <div class="card">
+                        <div class="card-header-with-search">
+                            <div>
+                                <h2>DAO Members</h2>
+                                <p class="card-description">View all members of the DAO and their statistics.</p>
+                            </div>
+                            <div class="search-box">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <input type="text" id="searchMembers" placeholder="Search by address...">
+                            </div>
+                        </div>
+                        <div id="membersList" class="members-list">
+                            <!-- Members will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Join DAO Tab -->
+                <div id="join-tab" class="tab-pane">
+                    <div class="card text-center">
+                        <div class="join-icon">
+                            <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                                <circle cx="40" cy="40" r="35" stroke="url(#gradient2)" stroke-width="3" />
+                                <path d="M40 25v30M25 40h30" stroke="url(#gradient2)" stroke-width="3"
+                                    stroke-linecap="round" />
+                                <defs>
+                                    <linearGradient id="gradient2" x1="0" y1="0" x2="80" y2="80">
+                                        <stop offset="0%" stop-color="#667eea" />
+                                        <stop offset="100%" stop-color="#764ba2" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+                        <h2>Join the DAO</h2>
+                        <p class="card-description">Become a member of the DAO and receive 100 initial tokens. Members
+                            can submit proposals and vote on website reputations.</p>
+                        <div class="benefits">
+                            <div class="benefit">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>100 Initial Tokens</span>
+                            </div>
+                            <div class="benefit">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Voting Rights</span>
+                            </div>
+                            <div class="benefit">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Earn Rewards</span>
+                            </div>
+                        </div>
+                        <button id="joinDAOBtn" class="btn btn-primary btn-large">
+                            Join DAO Now
+                        </button>
+                        <div id="memberStatus" class="member-status" style="display: none;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            You are already a DAO member!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <p>Processing transaction...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
