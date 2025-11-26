@@ -13,6 +13,8 @@ contract ReputationDAO {
         bool processed;
         bool active;
         mapping(uint8 => uint) voteCounts;
+        mapping(address => uint8) voterChoice;  // Track which option each voter chose
+        address[] voters;  // Track all voters for this proposal
         Reputation finalStatus;
     }
 
@@ -109,9 +111,12 @@ contract ReputationDAO {
         require(p.active, "Proposal is not active");
 
         p.voteCounts[_option]++;
+        p.voterChoice[msg.sender] = _option;  // Track voter's choice
+        p.voters.push(msg.sender);  // Add voter to list
         members[msg.sender].hasVoted[_proposalId] = true;
-        members[msg.sender].tokens += REWARD_AMOUNT;
         members[msg.sender].votesCount++;
+        
+        // No immediate reward - rewards distributed during finalization
         
         emit Voted(_proposalId, msg.sender, _option);
     }
@@ -125,6 +130,7 @@ contract ReputationDAO {
         uint totalVotes = p.voteCounts[0] + p.voteCounts[1] + p.voteCounts[2] + p.voteCounts[3];
         require(totalVotes >= VOTE_THRESHOLD, "Not enough votes to finalize");
 
+        // Determine winning option
         uint8 winner = 0;
         uint maxVotes = 0;
         for (uint8 i = 0; i <= 3; i++) {
@@ -137,7 +143,16 @@ contract ReputationDAO {
         p.finalStatus = Reputation(winner);
         p.processed = true;
         
+        // Reward proposer
         members[p.proposer].tokens += REWARD_AMOUNT * 2;
+        
+        // Reward only voters who voted with the majority
+        for (uint i = 0; i < p.voters.length; i++) {
+            address voter = p.voters[i];
+            if (p.voterChoice[voter] == winner) {
+                members[voter].tokens += REWARD_AMOUNT;
+            }
+        }
         
         emit ProposalProcessed(_proposalId, p.finalStatus);
     }
@@ -206,5 +221,16 @@ contract ReputationDAO {
     function isProposalActive(uint _proposalId) external view returns (bool) {
         require(_proposalId < proposalCount, "Invalid proposal ID");
         return proposals[_proposalId].active;
+    }
+
+    function getVoterChoice(uint _proposalId, address _voter) external view returns (uint8) {
+        require(_proposalId < proposalCount, "Invalid proposal ID");
+        require(members[_voter].hasVoted[_proposalId], "Voter has not voted on this proposal");
+        return proposals[_proposalId].voterChoice[_voter];
+    }
+
+    function getProposalVoters(uint _proposalId) external view returns (address[] memory) {
+        require(_proposalId < proposalCount, "Invalid proposal ID");
+        return proposals[_proposalId].voters;
     }
 }

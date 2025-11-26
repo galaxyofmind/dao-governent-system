@@ -113,6 +113,14 @@ def test_voting_and_processing(w3, contract):
     assert votes[0] == 2
     assert votes[3] == 1
     
+    # Check tokens BEFORE finalization - should still be 100 (no immediate rewards)
+    voter0_before = contract.functions.members(voters[0]).call()
+    voter1_before = contract.functions.members(voters[1]).call()
+    voter2_before = contract.functions.members(voters[2]).call()
+    assert voter0_before[1] == 100  # No reward yet
+    assert voter1_before[1] == 100  # No reward yet
+    assert voter2_before[1] == 100  # No reward yet
+    
     # Process
     contract.functions.processProposal(proposal_id).transact({"from": proposer})
     
@@ -120,7 +128,14 @@ def test_voting_and_processing(w3, contract):
     assert p[4] == True # Processed
     assert p[5] == 0 # Scam wins
     
-    # Check rewards
-    # Voter gets 10
-    voter_info = contract.functions.members(voters[0]).call()
-    assert voter_info[1] == 110 # 100 + 10
+    # Check rewards AFTER finalization
+    # Voters who voted "Scam" (majority) should get 10 tokens
+    voter0_after = contract.functions.members(voters[0]).call()
+    voter1_after = contract.functions.members(voters[1]).call()
+    assert voter0_after[1] == 110  # 100 + 10 (voted with majority)
+    assert voter1_after[1] == 110  # 100 + 10 (voted with majority)
+    
+    # Voter who voted "Safe" (minority) should NOT get reward
+    voter2_after = contract.functions.members(voters[2]).call()
+    assert voter2_after[1] == 100  # Still 100 (voted against majority, no reward)
+
