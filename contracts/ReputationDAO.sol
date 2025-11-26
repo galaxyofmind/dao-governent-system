@@ -25,6 +25,7 @@ contract ReputationDAO {
         uint joinedAt;
         uint proposalsSubmitted;
         uint votesCount;
+        string name;
         mapping(uint => bool) hasVoted;
     }
 
@@ -72,16 +73,19 @@ contract ReputationDAO {
         members[msg.sender].tokens = 1000;
         members[msg.sender].role = Role.Admin;
         members[msg.sender].joinedAt = block.timestamp;
+        members[msg.sender].name = "Admin";
         memberAddresses.push(msg.sender);
         totalMembers = 1;
     }
 
-    function joinDAO() external {
+    function joinDAO(string calldata _name) external {
         require(!members[msg.sender].isMember, "Already a member");
+        require(bytes(_name).length > 0 && bytes(_name).length <= 50, "Name must be 1-50 characters");
         members[msg.sender].isMember = true;
         members[msg.sender].tokens = 100;
         members[msg.sender].role = Role.Member;
         members[msg.sender].joinedAt = block.timestamp;
+        members[msg.sender].name = _name;
         memberAddresses.push(msg.sender);
         totalMembers++;
         emit MemberJoined(msg.sender, block.timestamp);
@@ -197,7 +201,8 @@ contract ReputationDAO {
         Role role,
         uint joinedAt,
         uint proposalsSubmitted,
-        uint votesCount
+        uint votesCount,
+        string memory name
     ) {
         Member storage m = members[_member];
         return (
@@ -206,7 +211,8 @@ contract ReputationDAO {
             m.role,
             m.joinedAt,
             m.proposalsSubmitted,
-            m.votesCount
+            m.votesCount,
+            m.name
         );
     }
 

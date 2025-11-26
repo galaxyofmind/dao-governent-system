@@ -229,6 +229,9 @@ async function loadDashboard() {
         // Load proposals
         await loadProposals();
 
+        // Load members
+        await loadMembers();
+
     } catch (error) {
         console.error('Dashboard load error:', error);
     }
@@ -345,34 +348,123 @@ async function joinDAO() {
         return;
     }
 
-    // Ensure on Ganache network before transaction
-    try {
-        await ensureGanacheNetwork();
-    } catch (error) {
+    // Prompt for name (Required by contract)
+    const name = prompt('Please enter your display name to join the DAO:');
+
+    if (!name || name.trim().length === 0) {
+        showToast('Name is required to join', 'error');
+        return;
+    }
+
+    if (name.length > 50) {
+        showToast('Name is too long (max 50 chars)', 'error');
         return;
     }
 
     try {
+        await ensureGanacheNetwork();
         showLoading(true);
 
-        const tx = await contract.methods.joinDAO().send({
+        // Send transaction with name
+        await contract.methods.joinDAO(name).send({
             from: currentAccount
         });
 
         showLoading(false);
-        showToast('Successfully joined the DAO! You received 100 tokens.', 'success');
+        showToast(`Welcome ${name}! You are now a DAO member.`, 'success');
 
         await loadDashboard();
 
     } catch (error) {
         showLoading(false);
         console.error('Join DAO error:', error);
-
         if (error.message.includes('Already a member')) {
-            showToast('You are already a DAO member', 'info');
+            showToast('You are already a member', 'info');
         } else {
             showToast('Failed to join DAO', 'error');
         }
+    }
+}
+
+// Load all members (Protected: Only for members)
+async function loadMembers() {
+    if (!contract || !currentAccount) return;
+
+    const membersList = document.getElementById('membersList');
+    if (!membersList) return;
+
+    try {
+        // Check permission first
+        const memberInfo = await contract.methods.members(currentAccount).call();
+        if (!memberInfo.isMember) {
+            membersList.innerHTML = `
+                <div class="empty-state">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 15v2m0 0v2m0-2h2m-2 0H10m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3>Access Denied</h3>
+                    <p>Only DAO members can view the member list.</p>
+                    <button onclick="switchTab('join')" class="btn btn-primary" style="margin-top: 1rem;">Join DAO</button>
+                </div>
+            `;
+            return;
+        }
+
+        // Fetch members
+        membersList.innerHTML = '<div class="loading">Loading members...</div>';
+
+        const memberAddresses = await contract.methods.getAllMembers().call();
+        membersList.innerHTML = ''; // Clear loading
+
+        if (memberAddresses.length === 0) {
+            membersList.innerHTML = '<div class="empty-state">No members found</div>';
+            return;
+        }
+
+        for (const address of memberAddresses) {
+            // Get detailed info including name
+            const info = await contract.methods.getMemberInfo(address).call();
+
+            const card = document.createElement('div');
+            card.className = 'member-card';
+
+            // Role badge style
+            const roles = ['Member', 'Moderator', 'Admin'];
+            const roleName = roles[info.role];
+            const roleClass = roleName.toLowerCase();
+
+            card.innerHTML = `
+                <div class="member-header">
+                    <div class="member-avatar">
+                        <span>${info.name.charAt(0).toUpperCase()}</span>
+                    </div>
+                    <div class="member-info">
+                        <div class="member-name">${info.name}</div>
+                        <div class="member-address">${address.substring(0, 6)}...${address.substring(38)}</div>
+                    </div>
+                    <span class="member-role ${roleClass}">${roleName}</span>
+                </div>
+                <div class="member-stats">
+                    <div class="stat">
+                        <label>Tokens</label>
+                        <span>${info.tokens}</span>
+                    </div>
+                    <div class="stat">
+                        <label>Proposals</label>
+                        <span>${info.proposalsSubmitted}</span>
+                    </div>
+                    <div class="stat">
+                        <label>Votes</label>
+                        <span>${info.votesCount}</span>
+                    </div>
+                </div>
+            `;
+            membersList.appendChild(card);
+        }
+
+    } catch (error) {
+        console.error('Error loading members:', error);
+        membersList.innerHTML = '<div class="error-state">Failed to load members</div>';
     }
 }
 

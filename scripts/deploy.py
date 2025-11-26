@@ -64,9 +64,17 @@ def deploy():
         "address": tx_receipt.contractAddress,
         "abi": abi
     }
+    
+    # Save to root directory
     with open("contract_data.json", "w") as f:
         json.dump(data, f, indent=4)
     print("Contract data saved to contract_data.json")
+    
+    # Save to frontend directory
+    frontend_path = os.path.join("frontend", "contract_data.json")
+    with open(frontend_path, "w") as f:
+        json.dump(data, f, indent=4)
+    print(f"Contract data saved to {frontend_path}")
 
 if __name__ == "__main__":
     deploy()

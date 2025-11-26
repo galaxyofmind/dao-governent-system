@@ -135,11 +135,4 @@ __pycache__/
 .pytest_cache/
 
 # Document file
-FINAL_STATUS.md 
-GIT_SETUP_GUIDE.md 
-PROJECT_INFORMATION.md
-PROJECT_SUMMARY.md
-SETUP_GUIDE.md
-VERIFICATION_RESULTS.md
-frontend/README.md
-README-backup.md 
+report/*
